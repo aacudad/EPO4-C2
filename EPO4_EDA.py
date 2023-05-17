@@ -22,6 +22,10 @@ DF_feat = pd.DataFrame()
 
 #%%
 DF_feat = pd.DataFrame()
+begin_l = np.empty((0,1))
+end_l = np.empty((0,1))
+index_l = np.empty((0,1))
+
 for i in range(16): # 16
     subject = 'S'+str(i+2)
     data_set_path= "C:/Users/JackC/Documents/EPO4/WESAD/WESAD/"
@@ -167,8 +171,8 @@ for i in range(16): # 16
         #plt.legend()
 
         ##Taking the time interval between of the cluster of peaks
-        #tf = t2[peaks[1]-5*sampling_rate:peaks[-1]+5*sampling_rate]
-        #phasic = phasic[peaks[1]-5*sampling_rate:peaks[-1]+5*sampling_rate]
+        tf = t2[peaks[1]-5*sampling_rate:peaks[-1]+5*sampling_rate]
+        phasic = phasic[peaks[1]-5*sampling_rate:peaks[-1]+5*sampling_rate]
         #print(tf.size)
         #print(phasic.size)
         ## plot
@@ -178,6 +182,15 @@ for i in range(16): # 16
         #plt.xlabel('$Time (s)$') 
         #plt.ylabel('$EDA$')
         #plt.legend()
+
+        # Index samples interval
+        start = peaks[1]-5*sampling_rate
+        end = peaks[-1]+5*sampling_rate
+
+        begin_l = np.append(begin_l, start[np.newaxis][np.newaxis], axis = 0)
+        end_l = np.append(end_l, end[np.newaxis][np.newaxis], axis = 0)
+        print(begin_l)
+        print(end_l)
 
         #Features from EDA signal
         tonic_phase_feat = biobss.edatools.from_decomposed(phasic, tonic, sampling_rate)
@@ -200,11 +213,12 @@ for i in range(16): # 16
         #DF_feat = pd.concat([DF_feat,DF_feat2], axis = 1)
         #DF_feat = pd.concat([DF_feat,DF_feat3], axis = 1)
         print(DF_feat)
-
+        
 #%%
+index_l = np.append(begin_l, end_l, axis = 1)
+print(index_l)
+
 DF_feat.fillna(DF_feat.median(), inplace = True)
 print(DF_feat)
 
 DF_feat.to_csv("EDA_features.csv")
-
-#%%
