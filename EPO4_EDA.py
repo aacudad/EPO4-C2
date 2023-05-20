@@ -19,6 +19,11 @@ from os.path import isfile, join, isdir
 
 from tqdm import tqdm
 #%%
+def feat_q(begin, end): # begin and end should be between 0 and 1
+    tonic_phase_feat_q = biobss.edatools.from_decomposed(phasic[int(phasic.size*begin):int(phasic.size*end)], tonic[int(tonic.size*begin):int(tonic.size*end)], sampling_rate)
+    DF_feat_q = pd.DataFrame.from_dict([tonic_phase_feat_q])
+    return DF_feat_q
+#%%
 # Empty dataframe and array to append data
 DF_feat = pd.DataFrame()
 begin_l = np.empty((0,1))
@@ -224,6 +229,21 @@ for i in range(16): # 16
         #DF_feat = pd.concat([DF_feat,DF_feat3], axis = 1)
         #print(DF_feat)
 
+        for i in range(20):
+            DF_feat_q = feat_q(i*0.05, i*0.05+0.05)
+            DF_feat = pd.concat([DF_feat,DF_feat_q], axis = 0)
+            
+        for i in range(10):
+            DF_feat_q = feat_q(i*0.1, i*0.1+0.1)
+            DF_feat = pd.concat([DF_feat,DF_feat_q], axis = 0)
+
+        for i in range(5):
+            DF_feat_q = feat_q(i*0.2, i*0.2+0.2)
+            DF_feat = pd.concat([DF_feat,DF_feat_q], axis = 0)
+
+        for i in range(2):
+            DF_feat_q = feat_q(i*0.5, i*0.5+0.5)
+            DF_feat = pd.concat([DF_feat,DF_feat_q], axis = 0)
 #%%
 # Combine begin and end index matrices
 index_l = np.append(begin_l, end_l, axis = 1)
@@ -235,3 +255,5 @@ print(DF_feat)
 
 # Convert to csv file
 DF_feat.to_csv("EDA_features.csv")
+
+# %%
