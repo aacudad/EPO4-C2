@@ -221,29 +221,35 @@ for i in range(16): # 16
         #phasic_feat = biobss.edatools.from_scr(phasic)
 
         # Convert dictionary to Dataframe
+        DF_feat2 = pd.DataFrame()
         DF_feat1 = pd.DataFrame.from_dict([tonic_phase_feat])
         #DF_feat2 = pd.DataFrame.from_dict([eda_freq_feat])
         #DF_feat3 = pd.DataFrame.from_dict([eda_sig_feat])
-        DF_feat = pd.concat([DF_feat,DF_feat1])
+        DF_feat2 = pd.concat([DF_feat2,DF_feat1])
         #DF_feat = pd.concat([DF_feat,DF_feat2], axis = 1)
         #DF_feat = pd.concat([DF_feat,DF_feat3], axis = 1)
         #print(DF_feat)
-
+        
+        # Rolling features
         for i in range(20):
             DF_feat_q = feat_q(i*0.05, i*0.05+0.05)
-            DF_feat = pd.concat([DF_feat,DF_feat_q], axis = 0)
+            DF_feat2 = pd.concat([DF_feat2,DF_feat_q], axis = 1)
             
         for i in range(10):
             DF_feat_q = feat_q(i*0.1, i*0.1+0.1)
-            DF_feat = pd.concat([DF_feat,DF_feat_q], axis = 0)
+            DF_feat2 = pd.concat([DF_feat2,DF_feat_q], axis = 1)
 
         for i in range(5):
             DF_feat_q = feat_q(i*0.2, i*0.2+0.2)
-            DF_feat = pd.concat([DF_feat,DF_feat_q], axis = 0)
+            DF_feat2 = pd.concat([DF_feat2,DF_feat_q], axis = 1)
 
         for i in range(2):
             DF_feat_q = feat_q(i*0.5, i*0.5+0.5)
-            DF_feat = pd.concat([DF_feat,DF_feat_q], axis = 0)
+            DF_feat2 = pd.concat([DF_feat2,DF_feat_q], axis = 1)
+        
+        DF_feat = pd.concat([DF_feat,DF_feat2])
+#%%
+print(DF_feat)
 #%%
 # Combine begin and end index matrices
 index_l = np.append(begin_l, end_l, axis = 1)
