@@ -116,7 +116,7 @@ for i in range(16): # 16
         # Zero pad the signal to avoid errors
         zero_pad = 55*sampling_rate-1
         phasic = np.pad(phasic, (zero_pad, 0))
-        phasic = np.insert(phasic,0,0)
+        phasic = np.insert(phasic,0,1)
         phasic = np.pad(phasic, (5, 0))
         t2 = np.arange(0,phasic.size*(1/sampling_rate),(1/sampling_rate))
         #print(phasic)
@@ -124,11 +124,11 @@ for i in range(16): # 16
         #print(t2.size)
 
         # Plot the zero padded signal
-        #plt.figure(figsize=(12,4))
-        #plt.plot(t2,phasic,label='phasic')
-        ##plt.plot(t2,tonic,label='tonic')
-        #plt.xlabel('$Time (s)$') 
-        #plt.ylabel('$EDA$')
+        plt.figure(figsize=(12,4))
+        plt.plot(t2,phasic,label='phasic')
+        #plt.plot(t2,tonic,label='tonic')
+        plt.xlabel('$Time (s)$') 
+        plt.ylabel('$EDA$')
 
         # Peak detection
         peaks, properties = scipy.signal.find_peaks(phasic)
@@ -174,27 +174,27 @@ for i in range(16): # 16
         right_ips = right_ips[keep1]
 
         ## plot the peaks
-        #plt.figure(figsize=(12,4))
-        #plt.plot(t2,phasic,label='phasic')
-        #plt.plot(t2[peaks],phasic[peaks],'o',label='peaks')
-        ## labels and titles
-        #plt.xlabel('$Time (s)$') 
-        #plt.ylabel('$EDA$')
-        #plt.legend()
+        plt.figure(figsize=(12,4))
+        plt.plot(t2,phasic,label='phasic')
+        plt.plot(t2[peaks],phasic[peaks],'o',label='peaks')
+        # labels and titles
+        plt.xlabel('$Time (s)$') 
+        plt.ylabel('$EDA$')
+        plt.legend()
 
         ##Taking the time interval between of the cluster of peaks with 5 sec extra
-        tf = t2[peaks[0]-5*sampling_rate:peaks[-1]+5*sampling_rate] 
-        phasic = phasic[peaks[0]-5*sampling_rate:peaks[-1]+5*sampling_rate]
+        tf = t2[peaks[1]-5*sampling_rate:peaks[-1]+5*sampling_rate] 
+        phasic = phasic[peaks[1]-5*sampling_rate:peaks[-1]+5*sampling_rate]
         #print(tf.size)
         #print(phasic.size)
 
         # plot the interval
-        #plt.figure(figsize=(12,4))
-        #plt.plot(tf,phasic,label='phasic')
-        ## labels and titles
-        #plt.xlabel('$Time (s)$') 
-        #plt.ylabel('$EDA$')
-        #plt.legend()
+        plt.figure(figsize=(12,4))
+        plt.plot(tf,phasic,label='phasic')
+        # labels and titles
+        plt.xlabel('$Time (s)$') 
+        plt.ylabel('$EDA$')
+        plt.legend()
 
         # Index samples interval
         start = peaks[1]-5*sampling_rate
