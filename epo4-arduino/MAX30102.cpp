@@ -530,16 +530,16 @@ uint8_t MAX30102::available(void)
 //Report the most recent red value
 uint32_t MAX30102::getRed(void)
 {
-  //Check the sensor for new data for 250ms
-  safeCheck(0);
+  // -------------------------------------------------------------------------------------------------- Dennis: always return read value, even if it remained the same
+  safeCheck(0); // -------------------------------------------------------------------------------------------------------------- Dennis: without this it doesn't work
   return (sense.red[sense.head]);
 }
 
 //Report the most recent IR value
 uint32_t MAX30102::getIR(void)
 {
-  //Check the sensor for new data for 250ms
-  safeCheck(0);
+  // -------------------------------------------------------------------------------------------------- Dennis: always return read value, even if it remained the same
+  safeCheck(0); // -------------------------------------------------------------------------------------------------------------- Dennis: without this it doesn't work
   return (sense.IR[sense.head]);
 }
 
@@ -708,7 +708,7 @@ bool MAX30102::safeCheck(uint8_t maxTimeToCheck)
 	if(check() == true) //We found new data!
 	  return(true);
 
-	// delay(1);
+	// delay(1); // ----------------------------------------------------------------------------------------------------------------------------- Dennis: remove possilbe delay
   }
 }
 
