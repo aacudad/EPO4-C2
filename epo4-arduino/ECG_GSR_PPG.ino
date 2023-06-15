@@ -9,7 +9,7 @@
   MAX30102 particleSensor;
   SerialTransfer myTransfer;
 
-  const int samplerate = 100; //Sample rate in Hz
+  const int samplerate = 400; //Sample rate in Hz, Maximum value = 500
   volatile unsigned long timestamp = 0;
   volatile uint16_t ecg = 0;
   volatile uint16_t gsr = 0;
@@ -47,12 +47,12 @@
     }
     
     //Configure sensor
-    byte powerLevel = 0x1F; //Options: 0=Off to 255=50mA. //Use 6.4mA for LED drive (default).
-    byte sampleAverage = 1; //Options: 1, 2, 4, 8, 16, 32. //Use 4 (default).
-    byte ledMode = 2; //Options: 1 = Red only, 2 = Red + IR, 3 = Red + IR + Green (Green LED not available for MAX30102). //Use 2 (default is 3).
-    int sampleRate = samplerate; //Options: 50, 100, 200, 400, 800, 1000, 1600, 3200. //Use same value as for other sensors defined earlier = 100 (default is 400).
-    int pulseWidth = 411; //Options: 69, 118, 215, 411. //Use largest option = 411 (default)
-    int adcRange = 4096; //Options: 2048, 4096, 8192, 16384. //Use 4096 (default)
+    byte powerLevel = 0x7F; //Options: 0=Off to 255=50mA (Default is 0x1F)
+    byte sampleAverage = 1; //Options: 1, 2, 4, 8, 16, 32 (Default is 1)
+    byte ledMode = 2; //Options: 1 = Red only, 2 = Red + IR, 3 = Red + IR + Green (Green LED not available for MAX30102) (Default is 2)
+    int sampleRate = 400; //Options: 50, 100, 200, 400, 800, 1000, 1600, 3200 (Default is 100)
+    int pulseWidth = 411; //Options: 69, 118, 215, 411 (Default is 411)
+    int adcRange = 16384; //Options: 2048, 4096, 8192, 16384 (Default is 2048)
     particleSensor.setup(powerLevel, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange); 
     // particleSensor.setup();
 
