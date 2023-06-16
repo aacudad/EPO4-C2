@@ -75,6 +75,9 @@
     testStruct.GSR = analogRead(analogPin2);
     testStruct.red = particleSensor.getRed();
     testStruct.IR = particleSensor.getIR();
+    
+    // Toggle LED state (Onboard LED)
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 
     // Transfer sampled data using serial
     uint16_t sendSize = 0;
