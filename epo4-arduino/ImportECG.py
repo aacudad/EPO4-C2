@@ -10,12 +10,9 @@ def import_all(COMport = '/dev/ttyACM0'):
         open_link = link.open()
         print(f"Link is open: {open_link}")
 
-        ## Without extension
-        # header = ['TimeStamp', 'ECG Data', 'GSR Data']
-        # data = [0, 0, 0]
-        ## With extension
         header = ['TimeStamp', 'ECG Data', 'GSR Data', 'PPG_Red Data', 'PPG_IR Data']
         data = [0, 0, 0, 0, 0]
+        n = 0   # Counter variable
 
         output_file = open('SensorData.csv', 'w')
         writer = csv.writer(output_file)
@@ -49,7 +46,13 @@ def import_all(COMport = '/dev/ttyACM0'):
                 data[4] = link.rx_obj(obj_type='I', start_pos=recSize)
                 recSize += txfer.STRUCT_FORMAT_LENGTHS['I']
 
+                # Print current data roughly every 10 seconds to check connection status and verify the system functioning
+                if n >= 2000:
+                    print(data)
+                    n = 0
+
                 writer.writerow(data)
+                n += 1
 
             elif link.status < 0:
                 if link.status == txfer.CRC_ERROR:

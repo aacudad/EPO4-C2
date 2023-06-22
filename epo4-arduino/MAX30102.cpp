@@ -527,21 +527,31 @@ uint8_t MAX30102::available(void)
   return (numberOfSamples);
 }
 
+
+
+//////////////////////////////////
+/*  Modified by Dennis Landman  */
+//////////////////////////////////
+
 //Report the most recent red value
 uint32_t MAX30102::getRed(void)
 {
-  // -------------------------------------------------------------------------------------------------- Dennis: always return read value, even if it remained the same
-  safeCheck(0); // -------------------------------------------------------------------------------------------------------------- Dennis: without this it doesn't work
+  // Edit: "Removed all delays to instantly receive sensor readout"
+  safeCheck(0);
   return (sense.red[sense.head]);
 }
 
 //Report the most recent IR value
 uint32_t MAX30102::getIR(void)
 {
-  // -------------------------------------------------------------------------------------------------- Dennis: always return read value, even if it remained the same
-  safeCheck(0); // -------------------------------------------------------------------------------------------------------------- Dennis: without this it doesn't work
+  // Edit: "Removed all delays to instantly receive sensor readout"
+  safeCheck(0);
   return (sense.IR[sense.head]);
 }
+
+//////////////////////////////////
+
+
 
 //Report the most recent Green value
 uint32_t MAX30102::getGreen(void)

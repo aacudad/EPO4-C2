@@ -1,24 +1,36 @@
-  //Import serial library
-  #include "SerialTransfer.h"
+  
+  /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+  * 
+  * Author: Group C2
+  * Date: 22-06-2023
+  * Project: EPO-4 Biosensing; "Arduino-based Stress Detector"
+  * 
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-  //The following libraries are used to read out the raw oxymeter data
+
+
+  // Import relevant libraries
+  #include "SerialTransfer.h"
   #include <Wire.h>
   #include "MAX30102.h"
 
-  //Set up the sensor and the connection
+  // Debug print to Serial Monitor / Plotter
+  #define DEBUG
+
+  // Set up the sensor and the connection with python
   MAX30102 particleSensor;
   SerialTransfer myTransfer;
 
-  const int samplerate = 400; //Sample rate in Hz, Maximum value = 500
-  volatile unsigned long timestamp = 0;
+  // Define global variables
+  const int samplerate = 400;     // Sample rate in Hz
+  const int analogPin1 = A0;
+  const int analogPin2 = A1;
   volatile uint16_t ecg = 0;
   volatile uint16_t gsr = 0;
   volatile uint32_t red = 0;
   volatile uint32_t ir = 0;
-  volatile unsigned long lastSampleTime = 0;
-  const int analogPin1 = A0; // Analog input pin 1
-  const int analogPin2 = A1; // Analog input pin 2
 
+  // Initialize struct
   struct __attribute__((packed)) STRUCT {
     unsigned long Timestamp;
     uint16_t ECG;
@@ -27,61 +39,67 @@
     uint32_t IR;
   } testStruct;
 
-
   void setup()
   {
-    //Initiate serial connection
+    // Initiate Serial communication at 115200 baud
     Serial.begin(115200);
-    // while(!Serial);
-    // Serial.println();
-    // Serial.println("MAX30102");
-    // Serial.println();
-    myTransfer.begin(Serial);
-    myTransfer.txObj(lastSampleTime);
 
-    // Initialize sensor
+    #ifdef DEBUG
+      // Print output via Serial
+      Serial.println();
+      Serial.println("MAX30102");
+      Serial.println();
+    #else
+      // Use Serial Transfer to send output to python
+      myTransfer.begin(Serial);
+    #endif
+
+    // Initialize sensor with a high speed connection
     if (particleSensor.begin(Wire, I2C_SPEED_FAST) == false)
     {
       Serial.println("MAX30102 was not found. Please check wiring/power. ");
       while (1);
     }
     
-    //Configure sensor
-    byte powerLevel = 0x7F; //Options: 0=Off to 255=50mA (Default is 0x1F)
-    byte sampleAverage = 1; //Options: 1, 2, 4, 8, 16, 32 (Default is 1)
-    byte ledMode = 2; //Options: 1 = Red only, 2 = Red + IR, 3 = Red + IR + Green (Green LED not available for MAX30102) (Default is 2)
-    int sampleRate = 400; //Options: 50, 100, 200, 400, 800, 1000, 1600, 3200 (Default is 100)
-    int pulseWidth = 411; //Options: 69, 118, 215, 411 (Default is 411)
-    int adcRange = 16384; //Options: 2048, 4096, 8192, 16384 (Default is 2048)
-    particleSensor.setup(powerLevel, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange); 
-    // particleSensor.setup();
+    // Configure sensor parameters for optimal resolution (18 bit)
+    byte powerLevel = 0x7F;   // Options: 0=Off to 255=50mA
+    byte sampleAverage = 1;   // Options: 1, 2, 4, 8, 16, 32
+    byte ledMode = 2;         // Options: 1 = Red only, 2 = Red + IR
+    int sampleRate = 400;     // Options: 50, 100, 200, 400, 800, 1000, 1600, 3200
+    int pulseWidth = 411;     // Options: 69, 118, 215, 411
+    int adcRange = 16384;     // Options: 2048, 4096, 8192, 16384
+    particleSensor.setup(powerLevel, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange);
 
-    //Set up timer to trigger interrupt at fixed interval
+    // Set up timer to trigger interrupts at a rate equal to the sample rate
     noInterrupts();
     TCCR1A = 0;
     TCCR1B = 0;
     TCNT1 = 0;
-    OCR1A = (16E6 / 256 / samplerate) -1; // Set compare match value
-    TCCR1B |= (1 << WGM12); // CTC mode
-    TCCR1B |= (1 << CS12); // 256 prescaler
-    TIMSK1 |= (1 << OCIE1A); // Enable timer compare interrupt
+    OCR1A = (16E6 / 256 / samplerate) -1;   // Set compare match value
+    TCCR1B |= (1 << WGM12);                 // CTC mode
+    TCCR1B |= (1 << CS12);                  // 256 prescaler
+    TIMSK1 |= (1 << OCIE1A);                // Enable timer compare interrupt
     interrupts();
   } 
 
+  // Interrupt Service Routine function that runs every time an interrupt is done
   ISR(TIMER1_COMPA_vect) {
-    // TestPrint();
-    TransferData();
+    #ifdef DEBUG
+      // Forward to debugging function
+      TestPrint();
+    #else
+      // Forward to regular operation function
+      TransferData();
+    #endif
   }
 
-  void TestPrint() {  
-    // Serial.print(timestamp);
+  // Function that prints output row by row to Serial Monitor / Plotter 
+  void TestPrint() {
     Serial.print(millis());
     Serial.print(" ");
     Serial.print(ecg);
-    // Serial.print(analogRead(analogPin1));
     Serial.print(" ");
     Serial.print(gsr);
-    // Serial.print(analogRead(analogPin2));
     Serial.print(" ");
     Serial.print(red);
     Serial.print(" ");
@@ -89,15 +107,16 @@
     Serial.println();
   }
 
+  // Function that sends new data samples to python everytime its called
   void TransferData() {
-    //Read analog inputs and build the struct
+    // Use most recent sensor values to fill the struct
     testStruct.Timestamp = millis();
     testStruct.ECG = ecg;
     testStruct.GSR = gsr;
     testStruct.Red = red;
     testStruct.IR = ir;
 
-    // Transfer sampled data using serial
+    // Define starting index and length of data to be send from buffer
     uint16_t sendSize = 0;
     uint16_t length = 16; //4+2+2+(2*4)=16 bytes
 
@@ -105,31 +124,13 @@
     sendSize = myTransfer.txObj(testStruct, sendSize, length);
     ///////////////////////////////////////// Send buffer
     myTransfer.sendData(sendSize);
-
-    //Update last sample time
-    lastSampleTime += (1000 / samplerate);
-    myTransfer.txObj(lastSampleTime);
-
   }
 
   void loop()
   {
-
-    // timestamp = millis(); //Creating the timestamp. +1 to make it easier to read.
+    // Continuously read sensor values and store them in temporary variables
     ecg = analogRead(analogPin1);
     gsr = analogRead(analogPin2);
     red = particleSensor.getRed();
     ir = particleSensor.getIR();
-
-
-    // particleSensor.check(); //Check the sensor
-    // while (particleSensor.available()) {
-    //   timestamp = millis();
-    //   ecg = analogRead(analogPin1);
-    //   gsr = analogRead(analogPin2);
-    //   red = particleSensor.getFIFORed();
-    //   ir = particleSensor.getFIFOIR();
-    //   particleSensor.nextSample();      
-    // }
-
   }
